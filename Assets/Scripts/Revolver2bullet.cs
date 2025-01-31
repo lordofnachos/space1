@@ -2,17 +2,13 @@ using System.Transactions;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Revolver1bullet : MonoBehaviour
+public class Revolver2bullet : MonoBehaviour
 {
     public string wallTag; //THE TAG OF THE WALL
     public string otherPlayer; //THE TAG OF THE OTHER PLAYER
 
     public float knockbackForce; //THE FORCE OF KNOCKBACK UPON SHOOTING AN ENEMY
     private Rigidbody2D rb;
-
-    public Revolver1 shotGunScript;
-
-    private bool flipped;
 
     void Awake()
     {
@@ -21,8 +17,6 @@ public class Revolver1bullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        flipped = shotGunScript.Flipped();
-
         //DESTROY THE BULLET WHEN IT COLLIDES WITH A WALL
         if (other.CompareTag(wallTag))
         {
@@ -30,10 +24,10 @@ public class Revolver1bullet : MonoBehaviour
         }
         else if (other.CompareTag(otherPlayer))
         {
-            Rigidbody2D otherPlayerRb = other.GetComponent<Rigidbody2D>();
-            if (otherPlayerRb != null)
+            Rigidbody2D playerRb = other.GetComponent<Rigidbody2D>();
+            if (playerRb != null)
             {
-                otherPlayerRb.linearVelocity = rb.linearVelocity * knockbackForce;
+                playerRb.linearVelocity = rb.linearVelocity * knockbackForce;
             }
         }
     }

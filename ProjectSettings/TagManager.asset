@@ -4,7 +4,10 @@
 TagManager:
   serializedVersion: 3
   tags:
-  - Ground0
+  - WALL
+  - FREEZE
+  - P2
+  - P1
   layers:
   - Default
   - TransparentFX

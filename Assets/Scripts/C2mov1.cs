@@ -1,6 +1,6 @@
 using Unity.VisualScripting;
 using UnityEngine;
-public class C1mov1 : MonoBehaviour
+public class C2mov1 : MonoBehaviour
 {
     public float moveAccel = 5f;
     public float moveAccelAir = 5f;
@@ -32,13 +32,11 @@ public class C1mov1 : MonoBehaviour
 
     private Animator animator;
 
-    public SpriteRenderer shotGunSprite;
+    public Revolver2 hammerScript;
 
-    public Revolver1 shotGunScript;
+    private bool turn = false;
 
-    private Vector2 rightFacingScale;
-
-    private bool flipped;
+    Vector2 rightFacingScale;
 
     void Awake()
     {
@@ -49,9 +47,9 @@ public class C1mov1 : MonoBehaviour
 
     void Update()
     {
-        flipped = shotGunScript.Flipped();
+        turn = hammerScript.Flip();
 
-        if (flipped)
+        if (turn)
         {
             transform.localScale = new Vector2(rightFacingScale.x * -1, rightFacingScale.y);
         }
@@ -60,7 +58,7 @@ public class C1mov1 : MonoBehaviour
             transform.localScale = new Vector2(rightFacingScale.x, rightFacingScale.y);
         }
 
-        Groundcheck1 groundCheckScript = groundCheck.GetComponent<Groundcheck1>();
+        Groundcheck2 groundCheckScript = groundCheck.GetComponent<Groundcheck2>();
         if (groundCheckScript.GetGroundCheck())
         {
             isGrounded = true;

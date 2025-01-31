@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Groundcheck1 : MonoBehaviour
+public class Groundcheck2 : MonoBehaviour
 {
     public string groundTag;
     private int groundContacts = 0;
@@ -29,7 +29,7 @@ public class Groundcheck1 : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(groundContacts > 0)
+        if (groundContacts > 0)
         {
             playerAnimator.SetBool("isGrounded", true);
         }
