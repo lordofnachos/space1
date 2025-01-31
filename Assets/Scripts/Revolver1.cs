@@ -28,6 +28,7 @@ public class Revolver1 : MonoBehaviour
     private float nextFireTime = 0f;
 
     public int pelletAmount;
+    private int pelletCount;
 
     public Animator shotGunAnim;
     public int shotGunShootDuration;
@@ -40,30 +41,13 @@ public class Revolver1 : MonoBehaviour
     }
     void Update()
     {
+        HandleShooting();
+        HandleFlipping();
+        PointGunTowardsOtherPlayer();
+    }
 
-        if (Input.GetKeyDown(fire) && Time.time >= nextFireTime)
-        {
-            if(bloom < maxBloom)
-            {
-                bloom += bloomChange;
-            }
-            for (int i = 0; i < 5; i++)
-            {
-                Shoot();
-            }
-            if(shotGunAnim != null)
-            {
-                shotGunAnim.SetInteger("shootDur", shotGunShootDuration);
-            }
-            nextFireTime = Time.time + fireRate;
-        }
-
-        if(bloom > minBloom && Time.time >= nextRecoveryTime)
-        {
-            nextRecoveryTime = Time.time + accuracyRecoveryRate;
-            bloom =- bloomChange;
-        }
-
+    void HandleFlipping()
+    {
         if (otherPlayer.position.x < transform.parent.position.x)
         {
             flipped = true;
@@ -73,9 +57,33 @@ public class Revolver1 : MonoBehaviour
             flipped = false;
         }
     }
-    private void FixedUpdate()
+
+    void HandleShooting()
     {
-        if(shotGunAnim != null)
+        if (Input.GetKeyDown(fire) && Time.time >= nextFireTime)
+        {
+            Shoot();
+
+            if (bloom < maxBloom)
+            {
+                bloom += bloomChange;
+            }
+            if (shotGunAnim != null)
+            {
+                shotGunAnim.SetInteger("shootDur", shotGunShootDuration);
+            }
+            nextFireTime = Time.time + fireRate;
+        }
+        if (bloom > minBloom && Time.time >= nextRecoveryTime)
+        {
+            nextRecoveryTime = Time.time + accuracyRecoveryRate;
+            bloom = -bloomChange;
+        }
+    }
+
+    void PointGunTowardsOtherPlayer()
+    {
+        if (shotGunAnim != null)
         {
             if (shotGunAnim.GetInteger("shootDur") > 0)
             {
@@ -95,6 +103,7 @@ public class Revolver1 : MonoBehaviour
         }
         transform.rotation = Quaternion.Lerp(transform.rotation, directionRotation, Time.deltaTime * rotationSpeed);
     }
+
     void Shoot()
     {
         ChangeTrajectory();
@@ -102,7 +111,6 @@ public class Revolver1 : MonoBehaviour
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
         Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
         bulletRb.constraints = RigidbodyConstraints2D.None;
-
         if (flipped)
         {
             bulletRb.linearVelocity = firePoint.right * bulletSpeed * -1;

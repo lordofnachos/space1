@@ -27,6 +27,7 @@ public class Revolver2 : MonoBehaviour
     private bool swinging = false;
     private bool returning = false;
     private bool flipped = false;
+    private bool bonk = false;
 
     private void Awake()
     {
@@ -57,6 +58,8 @@ public class Revolver2 : MonoBehaviour
     {
         if (!swinging && !returning)
         {
+            currentHammerRot = -hammerUpCharge;
+
             if (Input.GetKey(chargeHammerVert) && hammerUpCharge < hammerMaxUpCharge)
             {
                 hammerUpCharge += hammerUpChargeRate * Time.deltaTime * 60f;
@@ -67,7 +70,6 @@ public class Revolver2 : MonoBehaviour
                 swingSpeed = hammerUpCharge * chargeToSpeedRatio;
                 hammerUpCharge = 0f;
             }
-            currentHammerRot = -hammerUpCharge;
         }
     }
 
@@ -76,6 +78,9 @@ public class Revolver2 : MonoBehaviour
         if (swinging && !returning)
         {
             currentHammerRot += swingSpeed;
+
+            bonk = true;
+
             if (currentHammerRot >= hammerMaxUpSwing)
             {
                 currentHammerRot = hammerMaxUpSwing;
@@ -86,6 +91,10 @@ public class Revolver2 : MonoBehaviour
         }
         else if (returning && Time.time >= impactPauseTimer)
         {
+            bonk = false;
+
+            swingSpeed = 0;
+
             currentHammerRot -= returnSpeed;
             if (currentHammerRot <= 0f)
             {
@@ -111,9 +120,9 @@ public class Revolver2 : MonoBehaviour
     {
         Debug.Log(other.tag);
         Rigidbody2D rb = other.GetComponent<Rigidbody2D>();
-        if (rb != null)
+        if (rb != null && bonk)
         {
-            rb.AddForce(flipped? (transform.right * swingSpeed + transform.up * hammerUpCharge) : (transform.right * swingSpeed * -1 + transform.up * hammerUpCharge * -1), ForceMode2D.Impulse);
+            rb.AddForce(flipped? (transform.right * swingSpeed + transform.up * swingSpeed) : (transform.right * swingSpeed * -1 + transform.up * swingSpeed * -1), ForceMode2D.Impulse);
         }
     }
 
