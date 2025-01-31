@@ -27,6 +27,8 @@ public class Revolver1 : MonoBehaviour
     private float nextRecoveryTime = 0f;
     private float nextFireTime = 0f;
 
+    public int pelletAmount;
+
     public Animator shotGunAnim;
     public int shotGunShootDuration;
 
@@ -41,12 +43,19 @@ public class Revolver1 : MonoBehaviour
 
         if (Input.GetKeyDown(fire) && Time.time >= nextFireTime)
         {
-            Shoot();
-            nextFireTime = Time.time + fireRate;
+            if(bloom < maxBloom)
+            {
+                bloom += bloomChange;
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                Shoot();
+            }
             if(shotGunAnim != null)
             {
                 shotGunAnim.SetInteger("shootDur", shotGunShootDuration);
             }
+            nextFireTime = Time.time + fireRate;
         }
 
         if(bloom > minBloom && Time.time >= nextRecoveryTime)
@@ -105,13 +114,9 @@ public class Revolver1 : MonoBehaviour
 
         Destroy(bullet, bulletLifetime);
     }
+
     void ChangeTrajectory()
     {
-        if (bloom < maxBloom)
-        {
-            bloom = bloom + bloomChange;
-        }
-
         float randomInt = Random.Range(transform.eulerAngles.z - bloom, transform.eulerAngles.z + bloom);
 
         firePoint.eulerAngles = new Vector3(0f, 0f, randomInt);

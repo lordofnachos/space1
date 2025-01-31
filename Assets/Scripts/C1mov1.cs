@@ -132,13 +132,8 @@ public class C1mov1 : MonoBehaviour
             isJumpBoosting = false;
         }
 
-        if (rb.linearVelocityY < 0f)
-        {
-            animator.SetBool("isRising", false);
-        }
-        else
-        {
-            animator.SetBool("isRising", true);
-        }
+        animator.SetFloat("vertVel", rb.linearVelocityY);
+
+        Debug.Log(rb.linearVelocityY);
     }
 }

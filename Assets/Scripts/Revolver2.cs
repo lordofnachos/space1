@@ -6,17 +6,19 @@ public class Revolver2 : MonoBehaviour
     public KeyCode chargeHammerVert;
     public float hammerUpChargeRate = 1f;
     public float hammerMaxUpCharge = 50f;
-    public float hammerMaxUpSwing = 320f;
-    public float chargeToSpeedRatio = 2f;
+    public float hammerMaxUpSwing = 300f;
+    public float chargeToSpeedRatio = 10f;
     public float impactPauseTime = 0.8f;
     public float returnSpeed = 2f;
 
     public Transform thisPlayer;
     public Transform otherPlayer;
 
+    private Rigidbody2D rb;
+
     private SpriteRenderer spriteRenderer;
 
-    private Animator anim;
+    public Animator anim;
 
     private float currentHammerRot = 0f;
     private float hammerUpCharge = 0f;
@@ -29,7 +31,7 @@ public class Revolver2 : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
     private void Start()
@@ -95,50 +97,23 @@ public class Revolver2 : MonoBehaviour
 
     private void ApplyRotation()
     {
-        if (currentHammerRot > 180f)
-        {
-            currentHammerRot -= 360f;
-        }
         transform.rotation = Quaternion.Euler(0f, 0f, flipped ? -currentHammerRot : currentHammerRot);
     }
 
     private void HandleAnimation()
     {
-        if (swinging)
-        {
-            anim.SetBool("isSwinging", true);
-        }
-        else
-        {
-            anim.SetBool("isSwinging", false);
-        }
-        if (returning)
-        {
-            anim.SetBool("isReturning", true);
-        }
-        else
-        {
-            anim.SetBool("isReturning", false);
-        }
-        if (hammerUpCharge > 0f)
-        {
-            anim.SetBool("isResting", true);
-        }
-        else
-        {
-            anim.SetBool("isResting", false);
-        }
+        anim.SetBool("isSwinging", swinging);
+
+        anim.gameObject.GetComponent<SpriteRenderer>().flipX = swinging;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag(otherPlayerTag))
+        Debug.Log(other.tag);
+        Rigidbody2D rb = other.GetComponent<Rigidbody2D>();
+        if (rb != null)
         {
-            Rigidbody2D rb = other.GetComponent<Rigidbody2D>();
-            if (rb)
-            {
-                rb.AddForce(transform.right * hammerUpCharge + transform.up * hammerUpCharge, ForceMode2D.Impulse);
-            }
+            rb.AddForce(flipped? (transform.right * swingSpeed + transform.up * hammerUpCharge) : (transform.right * swingSpeed * -1 + transform.up * hammerUpCharge * -1), ForceMode2D.Impulse);
         }
     }
 
