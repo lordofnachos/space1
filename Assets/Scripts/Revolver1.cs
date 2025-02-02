@@ -3,6 +3,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.Rendering.Universal;
 using static UnityEngine.GraphicsBuffer;
 
 public class Revolver1 : MonoBehaviour
@@ -15,20 +16,21 @@ public class Revolver1 : MonoBehaviour
     public float rotationSpeed;
 
     public float bulletSpeed = 10f;
-    readonly private float bulletLifetime = 3f;
+    private readonly float bulletLifetime = 3f;
 
-    readonly public int minBloom = 3;
-    readonly private int maxBloom = 39;
+    public int minBloom = 3;
+    private readonly int maxBloom = 39;
     private int bloom = 0;
-    readonly private int bloomChange = 18;
+    private readonly int bloomChange = 18;
 
-    readonly private float accuracyRecoveryRate = 0.45f;
+    private readonly float accuracyRecoveryRate = 0.45f;
     public float fireRate = 0.2f;
     private float nextRecoveryTime = 0f;
     private float nextFireTime = 0f;
 
-    public int pelletAmount;
-    private int pelletCount;
+    public int bulletsPerShot = 4; // Number of bullets fired per shot
+
+    public Light2D bloomEffect;
 
     public Animator shotGunAnim;
     public int shotGunShootDuration;
@@ -39,6 +41,7 @@ public class Revolver1 : MonoBehaviour
     {
         bloom = minBloom;
     }
+
     void Update()
     {
         HandleShooting();
@@ -48,99 +51,71 @@ public class Revolver1 : MonoBehaviour
 
     void HandleFlipping()
     {
-        if (otherPlayer.position.x < transform.parent.position.x)
-        {
-            flipped = true;
-        }
-        else
-        {
-            flipped = false;
-        }
+        flipped = otherPlayer.position.x < transform.parent.position.x;
     }
 
     void HandleShooting()
     {
         if (Input.GetKeyDown(fire) && Time.time >= nextFireTime)
         {
-            Shoot();
+            for (int i = 0; i < bulletsPerShot; i++)
+            {
+                Shoot();
+            }
 
             if (bloom < maxBloom)
             {
                 bloom += bloomChange;
             }
+
             if (shotGunAnim != null)
             {
                 shotGunAnim.SetInteger("shootDur", shotGunShootDuration);
             }
+
             nextFireTime = Time.time + fireRate;
         }
+
         if (bloom > minBloom && Time.time >= nextRecoveryTime)
         {
             nextRecoveryTime = Time.time + accuracyRecoveryRate;
-            bloom = -bloomChange;
+            bloom -= bloomChange;
         }
     }
 
     void PointGunTowardsOtherPlayer()
     {
-        if (shotGunAnim != null)
+        if (shotGunAnim != null && shotGunAnim.GetInteger("shootDur") > 0)
         {
-            if (shotGunAnim.GetInteger("shootDur") > 0)
-            {
-                shotGunAnim.SetInteger("shootDur", shotGunAnim.GetInteger("shootDur") - 1);
-            }
-        }
-        Vector3 direction = otherPlayer.position - transform.position;
-        float directionAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-        Quaternion directionRotation;
-        if (flipped)
-        {
-            directionRotation = Quaternion.Euler(0f, 0f, directionAngle + 180);
+            shotGunAnim.SetInteger("shootDur", shotGunAnim.GetInteger("shootDur") - 1);
+            bloomEffect.enabled = true;
         }
         else
         {
-            directionRotation = Quaternion.Euler(0f, 0f, directionAngle);
+            bloomEffect.enabled = false;
         }
+
+        Vector3 direction = otherPlayer.position - transform.position;
+        float directionAngle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+        Quaternion directionRotation = flipped ? Quaternion.Euler(0f, 0f, directionAngle + 180) : Quaternion.Euler(0f, 0f, directionAngle);
         transform.rotation = Quaternion.Lerp(transform.rotation, directionRotation, Time.deltaTime * rotationSpeed);
     }
 
     void Shoot()
     {
-        ChangeTrajectory();
+        float randomBloom = Random.Range(-bloom, bloom);
+        Quaternion bulletRotation = Quaternion.Euler(0f, 0f, transform.eulerAngles.z + randomBloom);
 
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, bulletRotation);
         Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
         bulletRb.constraints = RigidbodyConstraints2D.None;
-        if (flipped)
-        {
-            bulletRb.linearVelocity = firePoint.right * bulletSpeed * -1;
-        }
-        else
-        {
-            bulletRb.linearVelocity = firePoint.right * bulletSpeed;
-        }
+        bulletRb.linearVelocity = bullet.transform.right * (flipped ? -bulletSpeed : bulletSpeed);
 
         Destroy(bullet, bulletLifetime);
     }
 
-    void ChangeTrajectory()
-    {
-        float randomInt = Random.Range(transform.eulerAngles.z - bloom, transform.eulerAngles.z + bloom);
-
-        firePoint.eulerAngles = new Vector3(0f, 0f, randomInt);
-
-        nextRecoveryTime = Time.time + accuracyRecoveryRate;
-    }
-
     public bool Flipped()
     {
-        if (flipped)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return flipped;
     }
 }

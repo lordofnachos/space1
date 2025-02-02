@@ -15,6 +15,7 @@ public class Revolver2 : MonoBehaviour
     public Transform otherPlayer;
 
     private Rigidbody2D rb;
+    private Collider2D col;
 
     private SpriteRenderer spriteRenderer;
 
@@ -23,7 +24,7 @@ public class Revolver2 : MonoBehaviour
     private float currentHammerRot = 0f;
     private float hammerUpCharge = 0f;
     private float swingSpeed = 0f;
-    private float impactPauseTimer = 0f;
+    private float impactPauseTimer = 999999f;
     private bool swinging = false;
     private bool returning = false;
     private bool flipped = false;
@@ -33,6 +34,7 @@ public class Revolver2 : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
+        col = GetComponent<Collider2D>();
     }
 
     private void Start()
@@ -47,6 +49,7 @@ public class Revolver2 : MonoBehaviour
         HandleSwinging();
         ApplyRotation();
         HandleAnimation();
+        HandleHitbox();
     }
 
     private void UpdateFlipping()
@@ -58,6 +61,8 @@ public class Revolver2 : MonoBehaviour
     {
         if (!swinging && !returning)
         {
+            bonk = false;
+
             currentHammerRot = -hammerUpCharge;
 
             if (Input.GetKey(chargeHammerVert) && hammerUpCharge < hammerMaxUpCharge)
@@ -91,11 +96,10 @@ public class Revolver2 : MonoBehaviour
         }
         else if (returning && Time.time >= impactPauseTimer)
         {
-            bonk = false;
-
             swingSpeed = 0;
 
             currentHammerRot -= returnSpeed;
+
             if (currentHammerRot <= 0f)
             {
                 currentHammerRot = 0f;
@@ -116,13 +120,18 @@ public class Revolver2 : MonoBehaviour
         anim.gameObject.GetComponent<SpriteRenderer>().flipX = swinging;
     }
 
+    private void HandleHitbox()
+    {
+        col.isTrigger = bonk;
+    }
+
     void OnTriggerEnter2D(Collider2D other)
     {
         Debug.Log(other.tag);
         Rigidbody2D rb = other.GetComponent<Rigidbody2D>();
         if (rb != null && bonk)
         {
-            rb.AddForce(flipped? (transform.right * swingSpeed + transform.up * swingSpeed) : (transform.right * swingSpeed * -1 + transform.up * swingSpeed * -1), ForceMode2D.Impulse);
+            rb.AddForce(flipped? (transform.right * swingSpeed + transform.up * 0) : (transform.right * swingSpeed * -1 + transform.up * 0 * -1), ForceMode2D.Impulse);
         }
     }
 

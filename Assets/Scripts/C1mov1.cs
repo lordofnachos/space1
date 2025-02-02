@@ -46,7 +46,6 @@ public class C1mov1 : MonoBehaviour
         animator = GetComponent<Animator>();
         rightFacingScale = transform.localScale;
     }
-
     void Update()
     {
         flipped = shotGunScript.Flipped();
@@ -134,6 +133,6 @@ public class C1mov1 : MonoBehaviour
 
         animator.SetFloat("vertVel", rb.linearVelocityY);
 
-        Debug.Log(rb.linearVelocityY);
+        animator.SetBool("isGrounded", isGrounded);
     }
 }
